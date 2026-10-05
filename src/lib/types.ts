@@ -76,7 +76,10 @@ export interface Conversation {
   updatedAt: number;
 }
 
+export type Theme = "dark" | "light";
+
 export interface Settings {
+  theme: Theme;
   effort: Effort;
   access: Access;
   workspace: string;

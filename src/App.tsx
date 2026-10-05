@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from "react";
+import { flushSync } from "react-dom";
 import { api } from "./lib/api";
 import { applyEvent } from "./lib/reduce";
 import type { AgentMessage, AppPaths, CodexStatus, Conversation, Settings, Skill } from "./lib/types";
@@ -33,7 +34,12 @@ function loadConversations(): Conversation[] {
 }
 
 function loadSettings(): Settings {
-  const defaults: Settings = { effort: "medium", access: "workspace-write", workspace: "" };
+  const defaults: Settings = {
+    theme: window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark",
+    effort: "medium",
+    access: "workspace-write",
+    workspace: "",
+  };
   try {
     return { ...defaults, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? "{}") };
   } catch {
@@ -55,9 +61,11 @@ export default function App() {
   const [paths, setPaths] = useState<AppPaths | null>(null);
   const [skills, setSkills] = useState<Skill[]>([]);
   const scroller = useRef<HTMLDivElement>(null);
+  const pinned = useRef(true);
 
   const active = useMemo(() => conversations.find((c) => c.id === activeId), [conversations, activeId]);
   const running = isRunning(active);
+  const runningIds = useMemo(() => conversations.filter(isRunning).map((c) => c.id), [conversations]);
   const workspace = active?.workspace || settings.workspace || paths?.defaultWorkspace || "";
   const ready = !!status?.found && status.loggedIn;
 
@@ -81,9 +89,25 @@ export default function App() {
   useEffect(() => localStorage.setItem(CONVERSATIONS_KEY, JSON.stringify(conversations)), [conversations]);
   useEffect(() => localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)), [settings]);
 
-  useEffect(() => {
-    scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" });
-  }, [active?.messages]);
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = settings.theme;
+  }, [settings.theme]);
+
+  const toggleTheme = (e: MouseEvent) => {
+    const flip = () => setSettings((s) => ({ ...s, theme: s.theme === "dark" ? "light" : "dark" }));
+    if (!("startViewTransition" in document)) return flip();
+    // The new theme spreads out from wherever the toggle was clicked.
+    const root = document.documentElement;
+    root.style.setProperty("--vt-x", `${e.clientX}px`);
+    root.style.setProperty("--vt-y", `${e.clientY}px`);
+    document.startViewTransition(() => flushSync(flip));
+  };
+
+  // Follow new content, unless the user has scrolled up to read something.
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    if (el && pinned.current) el.scrollTop = el.scrollHeight;
+  }, [active?.messages, activeId]);
 
   const send = useCallback(
     async (raw: string) => {
@@ -105,6 +129,7 @@ export default function App() {
       setConversations((prev) => (prev.some((c) => c.id === conv.id) ? prev.map((c) => (c.id === conv.id ? next : c)) : [...prev, next]));
       setActiveId(conv.id);
       setView("chat");
+      pinned.current = true;
       try {
         await api.sendTurn({
           conversationId: conv.id,
@@ -136,13 +161,16 @@ export default function App() {
   };
 
   return (
-    <div className="app">
-      <div className="sky" aria-hidden />
-      <Titlebar active={conversations.some(isRunning)} />
+    <div className="app" data-working={runningIds.length > 0}>
+      <div className="sky" aria-hidden>
+        <div className="sky-glow" />
+      </div>
+      <Titlebar active={runningIds.length > 0} theme={settings.theme} onToggleTheme={toggleTheme} />
       <div className="shell">
         <Sidebar
           conversations={conversations}
           activeId={activeId}
+          runningIds={runningIds}
           view={view}
           skillCount={skills.length}
           status={status}
@@ -159,11 +187,19 @@ export default function App() {
         />
 
         <main className="main">
+          <div className="beam" data-on={view === "chat" && running} />
           {view === "skills" ? (
             <SkillsView skills={skills} skillsDir={paths?.skillsDir ?? ""} onChanged={refreshSkills} />
           ) : (
             <>
-              <div className="thread" ref={scroller}>
+              <div
+                className="thread"
+                ref={scroller}
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  pinned.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+                }}
+              >
                 {active ? (
                   <div className="thread-inner">
                     {active.messages.map((message, index) =>
@@ -178,7 +214,7 @@ export default function App() {
                   </div>
                 ) : (
                   <div className="hero">
-                    <Eclipse size={168} />
+                    <Eclipse size={150} orbits />
                     <h1>
                       Everything is a <em>skill</em>.
                     </h1>
@@ -186,8 +222,14 @@ export default function App() {
                       Eclipse begins each session knowing only how to learn. Ask for something and watch it load what it needs.
                     </p>
                     <div className="hero-suggestions">
-                      {SUGGESTIONS.map((suggestion) => (
-                        <button type="button" key={suggestion} disabled={!ready} onClick={() => send(suggestion)}>
+                      {SUGGESTIONS.map((suggestion, index) => (
+                        <button
+                          type="button"
+                          key={suggestion}
+                          style={{ "--i": index } as CSSProperties}
+                          disabled={!ready}
+                          onClick={() => send(suggestion)}
+                        >
                           {suggestion}
                         </button>
                       ))}

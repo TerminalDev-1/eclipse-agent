@@ -5,7 +5,9 @@ import { ArrowUp, Folder, Lock, Pen, Stop } from "./Icons";
 import { Menu, type MenuOption } from "./Menu";
 
 // GPT-6 Luna is the only model Eclipse runs on for now; the picker is here for the day there are more.
-const MODELS: MenuOption<"gpt-6-luna">[] = [{ value: "gpt-6-luna", label: "GPT-6 Luna", hint: "Fast, light on usage" }];
+const MODELS: MenuOption<"gpt-6-luna">[] = [
+  { value: "gpt-6-luna", label: "GPT-6 Luna", hint: "Fast, light on usage", icon: <Eclipse size={20} /> },
+];
 
 const EFFORTS: MenuOption<Effort>[] = [
   { value: "low", label: "Low", hint: "Fastest, lighter reasoning" },

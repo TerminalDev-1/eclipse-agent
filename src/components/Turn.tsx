@@ -32,6 +32,17 @@ function Elapsed({ since }: { since: number }) {
   return <>{formatDuration(now - since)}</>;
 }
 
+/** What the agent is doing right now, judged by the last thing it did. */
+function activity(parts: Part[]): string {
+  const last = parts[parts.length - 1];
+  if (!last) return "Waking up";
+  if (last.kind === "skill") return `Loading ${last.name}`;
+  if (last.kind === "command" && last.status === "in_progress") return "Running a command";
+  if (last.kind === "files") return "Editing files";
+  if (last.kind === "search") return "Searching";
+  return "Thinking";
+}
+
 /** Consecutive skill loads collapse into one trail of chips. */
 function groupParts(parts: Part[]): (Part | { kind: "skills"; names: string[] })[] {
   const grouped: (Part | { kind: "skills"; names: string[] })[] = [];
@@ -129,7 +140,10 @@ export function Turn({ turn, isLast, onAnswer }: { turn: AgentMessage; isLast: b
 
         {running ? (
           <div className="turn-working">
-            <span className="shimmer">{turn.parts.length ? "Working" : "Waking up"}</span>
+            <span className="comet" />
+            <span className="shimmer" key={activity(turn.parts)}>
+              {activity(turn.parts)}
+            </span>
             <span className="turn-meta">
               <Elapsed since={turn.startedAt} />
             </span>

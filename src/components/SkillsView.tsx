@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { api } from "../lib/api";
 import type { Skill } from "../lib/types";
 import { Folder, Plus } from "./Icons";
@@ -83,8 +83,15 @@ export function SkillsView({ skills, skillsDir, onChanged }: { skills: Skill[]; 
               <span className="skill-card-desc">New — not saved yet</span>
             </button>
           )}
-          {skills.map((s) => (
-            <button type="button" key={s.name} className="skill-card" data-active={s.name === selected} onClick={() => setSelected(s.name)}>
+          {skills.map((s, index) => (
+            <button
+              type="button"
+              key={s.name}
+              className="skill-card"
+              data-active={s.name === selected}
+              style={{ "--i": index } as CSSProperties}
+              onClick={() => setSelected(s.name)}
+            >
               <span className="skill-card-name">
                 {s.name}
                 {s.name === "boot" && <em>kernel</em>}

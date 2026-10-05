@@ -12,6 +12,7 @@ function ago(time: number): string {
 export function Sidebar({
   conversations,
   activeId,
+  runningIds,
   view,
   skillCount,
   status,
@@ -22,6 +23,7 @@ export function Sidebar({
 }: {
   conversations: Conversation[];
   activeId: string | null;
+  runningIds: string[];
   view: "chat" | "skills";
   skillCount: number;
   status: CodexStatus | null;
@@ -46,7 +48,7 @@ export function Sidebar({
           <div key={conv.id} className="sidebar-item" data-active={view === "chat" && conv.id === activeId}>
             <button type="button" className="sidebar-item-main" onClick={() => onSelect(conv.id)}>
               <span className="sidebar-item-title">{conv.title}</span>
-              <span className="sidebar-item-time">{ago(conv.updatedAt)}</span>
+              {runningIds.includes(conv.id) ? <span className="sidebar-item-live" /> : <span className="sidebar-item-time">{ago(conv.updatedAt)}</span>}
             </button>
             <button type="button" className="sidebar-item-delete" onClick={() => onDelete(conv.id)} aria-label={`Delete ${conv.title}`}>
               <Trash />

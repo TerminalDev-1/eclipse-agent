@@ -24,6 +24,8 @@ export const Pen = (p: P) => <Icon {...p}><path d="m10.5 2.5 3 3L6 13l-3.5.5L3 1
 export const Trash = (p: P) => <Icon {...p}><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.5 9h6l.5-9" /></Icon>;
 export const Copy = (p: P) => <Icon {...p}><rect x="5.5" y="5.5" width="8" height="8" rx="1.5" /><path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2" /></Icon>;
 export const Search = (p: P) => <Icon {...p}><circle cx="7" cy="7" r="4" /><path d="m10 10 3.5 3.5" /></Icon>;
-export const Minimize = (p: P) => <Icon {...p}><path d="M3.5 8h9" /></Icon>;
+export const Sun = (p: P) => <Icon {...p}><circle cx="8" cy="8" r="2.8" /><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" /></Icon>;
+export const Moon = (p: P) => <Icon {...p}><path d="M13 9.6A5.5 5.5 0 0 1 6.4 3a5.5 5.5 0 1 0 6.6 6.6z" /></Icon>;
+export const Minimize =(p: P) => <Icon {...p}><path d="M3.5 8h9" /></Icon>;
 export const Maximize = (p: P) => <Icon {...p}><rect x="3.5" y="3.5" width="9" height="9" rx="1" /></Icon>;
 export const Close = (p: P) => <Icon {...p}><path d="m4 4 8 8M12 4l-8 8" /></Icon>;
