@@ -171,6 +171,7 @@ export default function App() {
         <div className="sky-blob" />
         <div className="sky-pointer" />
         <div className="sky-glow" />
+        <div className="sky-grain" />
       </div>
       {/* Turbulence that makes the large corona flow like liquid. */}
       <svg className="defs" aria-hidden>

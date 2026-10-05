@@ -2193,7 +2193,17 @@ button:disabled {
   width: 48vmax;
   height: 48vmax;
   border-radius: 50%;
-  filter: blur(70px);
+  /* No blur filter: a large blurred layer renders in visible bands on a dark sky. The
+     falloff is eased in the gradient itself, and .sky-grain dithers what remains. */
+  --tint: var(--accent-glow);
+  background: radial-gradient(
+    closest-side,
+    var(--tint),
+    color-mix(in srgb, var(--tint) 62%, transparent) 22%,
+    color-mix(in srgb, var(--tint) 30%, transparent) 46%,
+    color-mix(in srgb, var(--tint) 9%, transparent) 72%,
+    transparent
+  );
   opacity: 0.4;
   will-change: transform;
 }
@@ -2201,14 +2211,13 @@ button:disabled {
 .sky-blob:nth-child(1) {
   left: -14vmax;
   top: -20vmax;
-  background: radial-gradient(closest-side, var(--accent-glow), transparent);
   animation: drift-a 31s ease-in-out infinite alternate;
 }
 
 .sky-blob:nth-child(2) {
   right: -18vmax;
   top: 8%;
-  background: radial-gradient(closest-side, var(--halo-soft), transparent);
+  --tint: var(--halo-soft);
   opacity: 0.9;
   animation: drift-b 43s ease-in-out infinite alternate;
 }
@@ -2216,9 +2225,21 @@ button:disabled {
 .sky-blob:nth-child(3) {
   left: 28%;
   bottom: -30vmax;
-  background: radial-gradient(closest-side, var(--accent-glow), transparent);
   opacity: 0.28;
   animation: drift-c 37s ease-in-out infinite alternate;
+}
+
+/* Fine grain over the sky, so smooth gradients don't step. */
+.sky-grain {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.7 -0.12'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.07;
+}
+
+:root[data-theme="light"] .sky-grain {
+  filter: invert(1);
+  opacity: 0.05;
 }
 
 @keyframes drift-a {
