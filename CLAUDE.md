@@ -5,6 +5,8 @@ local Codex CLI login, pinned to GPT-6 Luna (`gpt-6-luna`).
 
 ## Rules
 
+- **Always commit.** Every change to this repo gets committed as soon as it works. Never
+  leave finished work uncommitted, and do not ask whether to commit.
 - **Push without asking.** After committing, push. Do not stop to ask whether to push.
 - **Public is always yes.** If a push, repository or release could be public or private,
   make it public. Do not ask.
