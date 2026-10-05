@@ -43,10 +43,20 @@ When to use this, then how to do the work.
 ## Process
 
 1. Check the index for a skill that already covers this. Improve it rather than adding
-   a near-duplicate.
+   a near-duplicate — read the existing file first and write the whole improved version.
 2. If the user's intent is unclear, load `ask`.
-3. Write the file. Read it back once as if you had never seen the task.
-4. Tell the user the skill's name and what it does. It appears in the Skills library
+3. Write the file. You cannot write into the skills directory directly; it is outside
+   the workspace. Write to the outbox instead (its path is in the kernel block of the
+   first message), creating the folders first:
+
+   ```
+   <outbox>/skills/<name>/SKILL.md
+   ```
+
+   When your turn ends, the app moves it into the skills directory and clears the
+   outbox. This needs `workspace-write` access; in `read-only`, tell the user to switch.
+4. Read it back once as if you had never seen the task.
+5. Tell the user the skill's name and what it does. It appears in the Skills library
    and is available from the next message.
 
 Never edit `boot` unless the user asks for that specifically; every session depends on it.

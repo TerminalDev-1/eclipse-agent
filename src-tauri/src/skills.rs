@@ -86,6 +86,42 @@ pub fn load(dir: &Path) -> Vec<Skill> {
     skills
 }
 
+/// Where the agent leaves skills and memory notes, relative to the workspace. The
+/// sandbox only lets it write inside the workspace, so the app files them afterwards.
+pub const OUTBOX: [&str; 2] = [".eclipse", "outbox"];
+
+/// Move what the agent left in the outbox to where it belongs:
+/// `skills/<name>/SKILL.md` into the skills directory, `memory.md` onto the memory file.
+pub fn collect_outbox(workspace: &Path, skills_dir: &Path, memory: &Path) {
+    let outbox = workspace.join(OUTBOX[0]).join(OUTBOX[1]);
+    if !outbox.is_dir() {
+        return;
+    }
+    for entry in fs::read_dir(outbox.join("skills"))
+        .into_iter()
+        .flatten()
+        .flatten()
+    {
+        let name = entry.file_name().to_string_lossy().into_owned();
+        let Ok(content) = fs::read_to_string(entry.path().join(SKILL_FILE)) else {
+            continue;
+        };
+        if valid_name(&name) && fs::create_dir_all(skills_dir.join(&name)).is_ok() {
+            let _ = fs::write(skills_dir.join(&name).join(SKILL_FILE), content);
+        }
+    }
+    if let Ok(notes) = fs::read_to_string(outbox.join("memory.md")) {
+        let existing = fs::read_to_string(memory).unwrap_or_default();
+        let _ = fs::write(
+            memory,
+            format!("{}\n{}\n", existing.trim_end(), notes.trim()),
+        );
+    }
+    let _ = fs::remove_dir_all(&outbox);
+    // Only succeeds when the outbox was all it held.
+    let _ = fs::remove_dir(workspace.join(OUTBOX[0]));
+}
+
 fn data_dir(app: &AppHandle) -> Result<PathBuf, String> {
     app.path().app_data_dir().map_err(|e| e.to_string())
 }

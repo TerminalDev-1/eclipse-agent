@@ -160,9 +160,11 @@ fn build_prompt(args: &TurnArgs, skills_dir: &Path, skills: &[Skill], memory: &P
              Start by loading `boot`. It explains how to choose and load every other skill.\n\n\
              Skill index:\n{index}\n\
              Workspace: {workspace} ({access})\n\
-             Memory file: {memory}",
+             Memory file (read-only): {memory}\n\
+             Outbox: {workspace}{sep}{outbox}",
             dir = skills_dir.display(),
             sep = std::path::MAIN_SEPARATOR,
+            outbox = skills::OUTBOX.join(std::path::MAIN_SEPARATOR_STR),
             workspace = args.workspace,
             access = args.access,
             memory = memory.display(),
@@ -256,11 +258,9 @@ pub async fn send_turn(
     #[cfg(windows)]
     cmd.arg("-c").arg("windows.sandbox=\"unelevated\"");
     cmd.arg("-s").arg(&args.access).arg("-C").arg(&workspace);
-    // The agent may author skills and keep memory, so both live in writable roots.
-    cmd.arg("--add-dir").arg(&skills_dir);
-    if let Some(memory_dir) = memory.parent() {
-        cmd.arg("--add-dir").arg(memory_dir);
-    }
+    // No --add-dir: the unelevated Windows sandbox cannot enforce more than one writable
+    // root and refuses every command if asked to. Skills and memory are written through
+    // the workspace outbox instead (see skills::collect_outbox).
     if let Some(thread) = &args.thread_id {
         cmd.arg("resume").arg(thread);
     }
@@ -332,6 +332,7 @@ pub async fn send_turn(
 
     let status = child.wait().await.ok();
     running.0.lock().await.remove(&args.conversation_id);
+    skills::collect_outbox(&workspace, &skills_dir, &memory);
     let stderr = stderr_task.await.unwrap_or_default();
     let failed = !cancelled && !status.is_some_and(|s| s.success());
     let error = failed.then(|| {
