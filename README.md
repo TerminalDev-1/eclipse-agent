@@ -5,7 +5,7 @@ how to load skills — markdown files on disk. To reply it loads `chat`; to ask 
 question it loads `ask`; to change a file it loads `edit`. The interface shows every
 skill as it is loaded.
 
-First commit: 05/10/2026, 14:11 BST
+First commit: October 5th, 2026 at 14:11 BST
 
 ## How it works
 
