@@ -5,9 +5,16 @@ local Codex CLI login, pinned to GPT-6 Luna (`gpt-6-luna`).
 
 ## Rules
 
-- **Always commit.** Every change to this repo gets committed as soon as it works. Never
-  leave finished work uncommitted, and do not ask whether to commit.
-- **Push without asking.** After committing, push. Do not stop to ask whether to push.
+- **Never end a turn with uncommitted or unpushed work.** The user does not want to see
+  diff lines or a "Create PR" prompt in Claude Code, ever. Before finishing any turn that
+  changed a file in this repo:
+  1. `git add -A` and commit, straight onto `main`.
+  2. `git push` to `origin main`.
+  3. Run `git status -sb` and confirm it shows `## main...origin/main` with nothing
+     under it — a clean tree, not ahead of the remote. If it does not, fix that first.
+- **No branches and no pull requests.** Work on `main` and push to `main`. Do not create
+  a feature branch or open a PR unless the user asks for one by name.
+- **Do not ask.** Not whether to commit, not whether to push. Just do both.
 - **Public is always yes.** If a push, repository or release could be public or private,
   make it public. Do not ask.
 
