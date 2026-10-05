@@ -140,7 +140,7 @@ export function Turn({ turn, isLast, onAnswer }: { turn: AgentMessage; isLast: b
 
         {running ? (
           <div className="turn-working">
-            <span className="comet" />
+            <span className="blob" />
             <span className="shimmer" key={activity(turn.parts)}>
               {activity(turn.parts)}
             </span>

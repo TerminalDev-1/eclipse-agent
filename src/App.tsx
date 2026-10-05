@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { flushSync } from "react-dom";
 import { api } from "./lib/api";
+import { installMotion } from "./lib/motion";
 import { applyEvent } from "./lib/reduce";
 import type { AgentMessage, AppPaths, CodexStatus, Conversation, Settings, Skill } from "./lib/types";
 import { Composer } from "./components/Composer";
@@ -93,6 +94,8 @@ export default function App() {
     document.documentElement.dataset.theme = settings.theme;
   }, [settings.theme]);
 
+  useEffect(installMotion, []);
+
   const toggleTheme = (e: MouseEvent) => {
     const flip = () => setSettings((s) => ({ ...s, theme: s.theme === "dark" ? "light" : "dark" }));
     if (!("startViewTransition" in document)) return flip();
@@ -163,8 +166,21 @@ export default function App() {
   return (
     <div className="app" data-working={runningIds.length > 0}>
       <div className="sky" aria-hidden>
+        <div className="sky-blob" />
+        <div className="sky-blob" />
+        <div className="sky-blob" />
+        <div className="sky-pointer" />
         <div className="sky-glow" />
       </div>
+      {/* Turbulence that makes the large corona flow like liquid. */}
+      <svg className="defs" aria-hidden>
+        <filter id="liquid" x="-40%" y="-40%" width="180%" height="180%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="2" seed="4" result="noise">
+            <animate attributeName="baseFrequency" dur="18s" values="0.012 0.018;0.021 0.011;0.012 0.018" repeatCount="indefinite" />
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="30" />
+        </filter>
+      </svg>
       <Titlebar active={runningIds.length > 0} theme={settings.theme} onToggleTheme={toggleTheme} />
       <div className="shell">
         <Sidebar
@@ -201,7 +217,7 @@ export default function App() {
                 }}
               >
                 {active ? (
-                  <div className="thread-inner">
+                  <div className="thread-inner" key={active.id}>
                     {active.messages.map((message, index) =>
                       message.role === "user" ? (
                         <div className="user-message" key={message.id}>

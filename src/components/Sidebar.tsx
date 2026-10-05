@@ -1,3 +1,4 @@
+import { useGlider } from "../lib/motion";
 import type { CodexStatus, Conversation } from "../lib/types";
 import { Layers, Plus, Trash } from "./Icons";
 
@@ -32,6 +33,7 @@ export function Sidebar({
   onDelete: (id: string) => void;
   onSkills: () => void;
 }) {
+  const glider = useGlider<HTMLElement>();
   const sorted = [...conversations].sort((a, b) => b.updatedAt - a.updatedAt);
   const ready = status?.found && status.loggedIn;
   return (
@@ -42,10 +44,10 @@ export function Sidebar({
       </button>
 
       <div className="sidebar-label">Sessions</div>
-      <nav className="sidebar-list">
+      <nav className="sidebar-list glide" {...glider}>
         {sorted.length === 0 && <p className="sidebar-empty">Nothing yet. Sessions you start appear here.</p>}
         {sorted.map((conv) => (
-          <div key={conv.id} className="sidebar-item" data-active={view === "chat" && conv.id === activeId}>
+          <div key={conv.id} className="sidebar-item" data-glide data-active={view === "chat" && conv.id === activeId}>
             <button type="button" className="sidebar-item-main" onClick={() => onSelect(conv.id)}>
               <span className="sidebar-item-title">{conv.title}</span>
               {runningIds.includes(conv.id) ? <span className="sidebar-item-live" /> : <span className="sidebar-item-time">{ago(conv.updatedAt)}</span>}

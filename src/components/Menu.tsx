@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useGlider } from "../lib/motion";
 import { Check, Chevron } from "./Icons";
 
 export interface MenuOption<T extends string> {
@@ -31,6 +32,7 @@ export function Menu<T extends string>({
   // Bumped on every choice so the pill replays its animation, even for the same value.
   const [pulse, setPulse] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const glider = useGlider<HTMLDivElement>();
   const timers = useRef<number[]>([]);
   const current = options.find((o) => o.value === value) ?? options[0];
 
@@ -90,7 +92,7 @@ export function Menu<T extends string>({
         {pulse > 0 && <i className="pill-flare" key={pulse} />}
       </button>
       {state !== "closed" && (
-        <div className="menu-pop" role="listbox" aria-label={title} data-closing={state === "closing"}>
+        <div className="menu-pop glide" role="listbox" aria-label={title} data-closing={state === "closing"} {...glider}>
           <div className="menu-title">{title}</div>
           {options.map((option, index) => (
             <button
@@ -99,6 +101,7 @@ export function Menu<T extends string>({
               role="option"
               aria-selected={option.value === value}
               data-picked={option.value === picked}
+              data-glide
               className="menu-item"
               style={{ "--i": index } as CSSProperties}
               onClick={() => pick(option.value)}
